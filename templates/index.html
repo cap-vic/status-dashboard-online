@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Статус сотрудников</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { text-align: center; color: #333; }
+    .container { max-width: 900px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .status-selector { text-align: center; margin-bottom: 30px; }
+    select, .status-btn { padding: 10px; margin: 5px; font-size: 16px; }
+    .status-btn { border: none; border-radius: 5px; cursor: pointer; padding: 10px 20px; }
+    .status-green { background-color: #4CAF50; color: white; }
+    .status-red { background-color: #f44336; color: white; }
+    .status-gray { background-color: #9E9E9E; color: white; }
+    .employees { display: grid; gap: 8px; }
+    .employee { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; align-items: center; }
+    .status-dot { width: 18px; height: 18px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+    .dot-green { background-color: #4CAF50; }
+    .dot-red { background-color: #f44336; }
+    .dot-gray { background-color: #9E9E9E; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Статус сотрудников</h1>
+    <div class="status-selector">
+      <p><strong>Ваша фамилия:</strong></p>
+      <select id="employeeSelect">
+        {% for surname in surnames %}
+          <option value="{{ surname }}">{{ surname }}</option>
+        {% endfor %}
+      </select>
+      <br><br>
+      <button class="status-btn status-green" onclick="setStatus('green')">Свободен</button>
+      <button class="status-btn status-red" onclick="setStatus('red')">Занят</button>
+      <button class="status-btn status-gray" onclick="setStatus('gray')">Не работаю</button>
+    </div>
+    <hr />
+    <h2>Текущие статусы</h2>
+    <div class="employees" id="statusList"></div>
+  </div>
+
+  <script>
+    async function loadStatuses() {
+      try {
+        const res = await fetch('/status');
+        const statuses = await res.json();
+        renderStatuses(statuses);
+      } catch (err) { console.error("Ошибка", err); }
+    }
+
+    async function setStatus(color) {
+      const name = document.getElementById('employeeSelect').value;
+      if (!name) return alert("Выберите фамилию!");
+      const res = await fetch('/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, status: color })
+      });
+      if (res.ok) {
+        alert(`Статус установлен`);
+        loadStatuses();
+      } else {
+        alert("Ошибка");
+      }
+    }
+
+    function renderStatuses(statuses) {
+      const container = document.getElementById('statusList');
+      container.innerHTML = '';
+      Object.keys(statuses).sort().forEach(emp => {
+        const status = statuses[emp];
+        const div = document.createElement('div');
+        div.className = 'employee';
+        div.innerHTML = `<strong>${emp}</strong> <span class="status-dot dot-${status}"></span>`;
+        container.appendChild(div);
+      });
+    }
+
+    setInterval(loadStatuses, 10000);
+    loadStatuses();
+  </script>
+</body>
+</html>
