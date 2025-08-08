@@ -14,7 +14,8 @@ ENCODED_KEY = """ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAgInByb2plY3RfaWQiOiA
 key_data = json.loads(base64.b64decode(ENCODED_KEY).decode())
 CREDS = ServiceAccountCredentials.from_json_keyfile_dict(key_data, SCOPE)
 CLIENT = gspread.authorize(CREDS)
-SHEET = CLIENT.open('Status Dashboard').sheet1
+SPREADSHEET_ID = 1zKCQ8fvxmaFwOhqimZZThbK1FKtXxUAd6guWu1WW2c0'
+SHEET = CLIENT.open_by_key(SPREADSHEET_ID).sheet1
 
 SURNAMES = [
     "Авдейкова Ольга", "Березина Екатерина", "Григорьева Лариса", "Гришкевич Вероника", "Данилов Антон",
